@@ -51,7 +51,12 @@ export async function POST(req: Request) {
       where: { userId: session.user.id },
     })
 
-    const modelToUse = model || settings?.model || process.env.OPENAI_MODEL
+    const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash"
+    const requestedModel = model || settings?.model
+    const modelToUse =
+      typeof requestedModel === "string" && requestedModel.startsWith("gemini-")
+        ? requestedModel
+        : defaultGeminiModel
     const temp = temperature ?? settings?.temperature ?? 0.7
     const tokens = maxTokens ?? settings?.maxTokens ?? 4096
 
