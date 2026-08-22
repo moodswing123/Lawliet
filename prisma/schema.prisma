@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String         @default("")
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  conversations Conversation[]
+  settings      UserSetting?
+
+  @@map("users")
+}
+
+model UserSetting {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme       String   @default("system")
+  model       String?  @default("gpt-4-turbo-preview")
+  temperature Float?   @default(0.7)
+  maxTokens   Int?     @default(4096)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  title      String    @default("New Conversation")
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
+}
