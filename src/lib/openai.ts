@@ -19,11 +19,8 @@ export async function streamChatCompletion(
   temperature?: number,
   maxTokens?: number
 ): Promise<AsyncIterable<string>> {
-  const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash"
-  const modelToUse =
-    typeof model === "string" && model.startsWith("gemini-")
-      ? model
-      : defaultGeminiModel
+  const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
+  const modelToUse = model === defaultGeminiModel ? model : defaultGeminiModel
   const temp = temperature ?? parseFloat(process.env.GEMINI_TEMPERATURE || "0.7")
   const tokens = maxTokens ?? parseInt(process.env.GEMINI_MAX_TOKENS || "4096", 10)
   const systemMessages = messages.filter((message) => message.role === "system")

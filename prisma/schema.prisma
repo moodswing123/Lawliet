@@ -28,7 +28,7 @@ model UserSetting {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme       String   @default("system")
-  model       String?  @default("gemini-2.5-flash")
+  model       String?  @default("gemini-3.6-flash")
   temperature Float?   @default(0.7)
   maxTokens   Int?     @default(4096)
   createdAt   DateTime @default(now())

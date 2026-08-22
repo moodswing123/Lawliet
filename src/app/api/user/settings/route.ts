@@ -13,10 +13,11 @@ export async function GET(req: Request) {
       where: { userId: session.user.id },
     })
 
-    if (settings && (!settings.model || !settings.model.startsWith("gemini-"))) {
+    const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
+    if (settings && settings.model !== defaultGeminiModel) {
       const normalizedSettings = await prisma.userSetting.update({
         where: { userId: session.user.id },
-        data: { model: process.env.GEMINI_MODEL || "gemini-2.5-flash" },
+        data: { model: defaultGeminiModel },
       })
       return NextResponse.json(normalizedSettings)
     }
@@ -40,8 +41,8 @@ export async function PATCH(req: Request) {
     const data = await req.json()
     const normalizedData = {
       ...data,
-      ...(data.model && !String(data.model).startsWith("gemini-")
-        ? { model: process.env.GEMINI_MODEL || "gemini-2.5-flash" }
+      ...(data.model && String(data.model) !== (process.env.GEMINI_MODEL || "gemini-3.6-flash")
+        ? { model: process.env.GEMINI_MODEL || "gemini-3.6-flash" }
         : {}),
     }
 

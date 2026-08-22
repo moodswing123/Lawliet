@@ -153,12 +153,11 @@ export default function SettingsPage() {
                 AI Model
               </label>
               <select
-                value={settings.model?.startsWith("gemini-") ? settings.model : "gemini-2.5-flash"}
+                value={settings.model === "gemini-3.6-flash" ? settings.model : "gemini-3.6-flash"}
                 onChange={handleModelChange}
                 className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               >
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
               </select>
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className={`w-2 h-2 rounded-full ${saving ? "animate-pulse bg-yellow-500" : "bg-green-500"}`} />
