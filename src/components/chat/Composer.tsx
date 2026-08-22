@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react"
-import { Button } from "@/components/ui/Button"
 import { Tooltip } from "@/components/ui/Tooltip"
-import { Send, Square, Paperclip } from "lucide-react"
+import { Mic, Paperclip, Send, Square } from "lucide-react"
 
 interface ComposerProps {
   onSend: (message: string) => void
@@ -19,7 +18,7 @@ export function Composer({ onSend, onStop, isGenerating, disabled }: ComposerPro
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto"
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`
     }
   }, [input])
 
@@ -27,9 +26,7 @@ export function Composer({ onSend, onStop, isGenerating, disabled }: ComposerPro
     if (input.trim() && !isGenerating && !disabled) {
       onSend(input.trim())
       setInput("")
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto"
-      }
+      if (textareaRef.current) textareaRef.current.style.height = "auto"
     }
   }
 
@@ -40,15 +37,19 @@ export function Composer({ onSend, onStop, isGenerating, disabled }: ComposerPro
     }
   }
 
+  const canSend = Boolean(input.trim()) && !disabled
+
   return (
-    <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="relative flex items-end gap-2 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
+    <div className="shrink-0 bg-[#111111] px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-end gap-1.5 rounded-[25px] border border-white/[0.09] bg-[#252525] p-2 shadow-[0_10px_35px_rgba(0,0,0,0.22)] transition focus-within:border-white/20 focus-within:ring-2 focus-within:ring-white/[0.06]">
           <button
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+            type="button"
+            className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/55 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             disabled
+            aria-label="Attach a file"
           >
-            <Paperclip className="w-5 h-5" />
+            <Paperclip className="h-[20px] w-[20px]" />
           </button>
 
           <textarea
@@ -56,38 +57,46 @@ export function Composer({ onSend, onStop, isGenerating, disabled }: ComposerPro
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Send a message..."
+            placeholder="Message Lawliet"
             rows={1}
             disabled={disabled || isGenerating}
-            className="flex-1 bg-transparent border-0 resize-none outline-none px-1 py-2 max-h-[200px] text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 disabled:opacity-50"
+            className="max-h-[180px] min-h-10 flex-1 resize-none border-0 bg-transparent px-1 py-2.5 text-[16px] leading-5 text-white outline-none placeholder:text-white/35 disabled:opacity-50"
+            aria-label="Message Lawliet"
           />
 
           {isGenerating ? (
-            <Button
-              onClick={onStop}
-              variant="outline"
-              size="sm"
-              className="flex-shrink-0 gap-1 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <Square className="w-4 h-4" />
-              Stop
-            </Button>
-          ) : (
-            <Tooltip content="Send message (Enter)">
-              <Button
-                onClick={handleSubmit}
-                disabled={!input.trim() || disabled}
-                className="flex-shrink-0"
-                size="sm"
+            <Tooltip content="Stop generating">
+              <button
+                type="button"
+                onClick={onStop}
+                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#171717] transition hover:bg-white/85"
+                aria-label="Stop generating"
               >
-                <Send className="w-4 h-4" />
-              </Button>
+                <Square className="h-4 w-4 fill-current" />
+              </button>
             </Tooltip>
+          ) : canSend ? (
+            <Tooltip content="Send message">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#171717] transition hover:bg-white/85"
+                aria-label="Send message"
+              >
+                <Send className="h-[18px] w-[18px]" />
+              </button>
+            </Tooltip>
+          ) : (
+            <button
+              type="button"
+              className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/45 transition hover:bg-white/[0.08] hover:text-white"
+              aria-label="Voice input"
+            >
+              <Mic className="h-[20px] w-[20px]" />
+            </button>
           )}
         </div>
-        <div className="mt-2 text-xs text-gray-400 dark:text-gray-500 text-center">
-          Press Enter to send · Shift+Enter for new line
-        </div>
+        <p className="pt-2 text-center text-[11px] text-white/30">Lawliet can make mistakes. Check important information.</p>
       </div>
     </div>
   )

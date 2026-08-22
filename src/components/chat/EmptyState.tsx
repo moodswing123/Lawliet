@@ -1,12 +1,11 @@
 "use client"
 
-import { Sparkles, MessageSquare, Zap, Brain } from "lucide-react"
+import { ArrowUpRight, Brain, Code2, Lightbulb, Sparkles } from "lucide-react"
 
 const suggestions = [
-  "Explain quantum computing in simple terms",
-  "Write a Python script to scrape a website",
-  "Help me plan a healthy meal prep routine",
-  "Summarize the latest AI research trends",
+  { label: "Explain something simply", icon: Brain },
+  { label: "Help me write", icon: Code2 },
+  { label: "Give me ideas", icon: Lightbulb },
 ]
 
 interface EmptyStateProps {
@@ -15,34 +14,24 @@ interface EmptyStateProps {
 
 export function EmptyState({ onSend }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto px-4 py-12 text-center animate-in fade-in-50">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg">
-        <Sparkles className="w-10 h-10 text-white" />
+    <div className="flex min-h-full flex-col items-center justify-center px-5 pb-24 pt-16 text-center">
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-[18px] bg-gradient-to-br from-blue-500 to-violet-600 shadow-[0_8px_30px_rgba(99,102,241,0.28)]">
+        <Sparkles className="h-7 w-7 text-white" />
       </div>
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-        Welcome to Lawliet
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
-        Your intelligent AI companion. Ask me anything—I'm here to help you think, create, and explore.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-        {suggestions.map((suggestion, index) => (
+      <h1 className="text-[28px] font-semibold tracking-[-0.03em] text-white sm:text-3xl">How can I help?</h1>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">Ask Lawliet anything, or start with one of these ideas.</p>
+
+      <div className="mt-8 flex max-w-xl flex-wrap justify-center gap-2.5">
+        {suggestions.map(({ label, icon: Icon }) => (
           <button
-            key={index}
-            onClick={() => onSend(suggestion)}
-            className="p-4 text-left bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 group"
+            key={label}
+            type="button"
+            onClick={() => onSend(label)}
+            className="group flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.035] px-3.5 py-2.5 text-left text-sm text-white/65 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
           >
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5">
-                {index === 0 && <Brain className="w-4 h-4 text-blue-500" />}
-                {index === 1 && <Zap className="w-4 h-4 text-yellow-500" />}
-                {index === 2 && <Sparkles className="w-4 h-4 text-purple-500" />}
-                {index === 3 && <MessageSquare className="w-4 h-4 text-green-500" />}
-              </div>
-              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition">
-                {suggestion}
-              </span>
-            </div>
+            <Icon className="h-4 w-4 text-white/45 transition group-hover:text-blue-300" />
+            <span>{label}</span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-white/25" />
           </button>
         ))}
       </div>
