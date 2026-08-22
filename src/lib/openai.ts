@@ -1,42 +1,68 @@
-import OpenAI from "openai"
+import { GoogleGenAI } from "@google/genai"
+
+type ChatMessage = {
+  role: "system" | "user" | "assistant"
+  content: string
+}
+
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not configured")
+  }
+  return new GoogleGenAI({ apiKey })
+}
 
 export async function streamChatCompletion(
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
+  messages: ChatMessage[],
   model?: string,
   temperature?: number,
   maxTokens?: number
-) {
-  const modelToUse = model || process.env.OPENAI_MODEL || "gpt-4-turbo-preview"
-  const temp = temperature || parseFloat(process.env.OPENAI_TEMPERATURE || "0.7")
-  const tokens = maxTokens || parseInt(process.env.OPENAI_MAX_TOKENS || "4096")
+): Promise<AsyncIterable<string>> {
+  const modelToUse = model || process.env.GEMINI_MODEL || "gemini-2.5-flash"
+  const temp = temperature ?? parseFloat(process.env.GEMINI_TEMPERATURE || "0.7")
+  const tokens = maxTokens ?? parseInt(process.env.GEMINI_MAX_TOKENS || "4096", 10)
+  const systemMessages = messages.filter((message) => message.role === "system")
+  const contents = messages
+    .filter((message) => message.role !== "system")
+    .map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    }))
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not configured")
-    }
-    const openai = new OpenAI({ apiKey })
-    const stream = await openai.chat.completions.create({
+    const stream = await getGeminiClient().models.generateContentStream({
       model: modelToUse,
-      messages,
-      temperature: temp,
-      max_tokens: tokens,
-      stream: true,
+      contents,
+      config: {
+        temperature: temp,
+        maxOutputTokens: tokens,
+        ...(systemMessages.length > 0
+          ? { systemInstruction: systemMessages.map((message) => message.content).join("\n\n") }
+          : {}),
+      },
     })
 
-    return stream
+    const textChunks = async function* () {
+      for await (const chunk of stream) {
+        const text = chunk.text || ""
+        if (text) yield text
+      }
+    }
+
+    return textChunks()
   } catch (error: any) {
-    if (error.status === 401) {
-      throw new Error("Invalid API key. Please check your OpenAI credentials.")
+    const status = error?.status || error?.response?.status
+    const message = error?.message || "Unknown Gemini error"
+    if (status === 401 || status === 403) {
+      throw new Error("Invalid Gemini API key. Please check GEMINI_API_KEY.")
     }
-    if (error.status === 429) {
-      throw new Error("Rate limit exceeded. Please try again later.")
+    if (status === 429) {
+      throw new Error("Gemini rate limit exceeded. Please try again later.")
     }
-    if (error.status === 404) {
-      throw new Error(
-        `Model "${modelToUse}" not found. Check your OPENAI_MODEL setting.`
-      )
+    if (status === 404) {
+      throw new Error(`Gemini model \"${modelToUse}\" was not found.`)
     }
-    throw new Error(`OpenAI error: ${error.message || "Unknown error"}`)
+    throw new Error(`Gemini error: ${message}`)
   }
 }

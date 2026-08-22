@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         let fullContent = ""
         try {
           for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || ""
+            const content = chunk
             if (content) {
               fullContent += content
               const data = JSON.stringify({ content, done: false })
