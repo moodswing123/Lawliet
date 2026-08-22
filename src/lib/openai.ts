@@ -1,9 +1,5 @@
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 export async function streamChatCompletion(
   messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
   model?: string,
@@ -15,6 +11,11 @@ export async function streamChatCompletion(
   const tokens = maxTokens || parseInt(process.env.OPENAI_MAX_TOKENS || "4096")
 
   try {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY is not configured")
+    }
+    const openai = new OpenAI({ apiKey })
     const stream = await openai.chat.completions.create({
       model: modelToUse,
       messages,
