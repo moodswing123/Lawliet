@@ -35,3 +35,12 @@ Inactive-control audit (2026-08-22):
 The paperclip button in `src/components/chat/Composer.tsx` is explicitly disabled and has no file input or callback. The voice button has no click handler. The chat header buttons for Share conversation, Conversation activity, and More options have no click handlers. Message feedback buttons for Good response and Bad response have no handlers. Copy and regenerate work, and sidebar search/new/select/rename/delete/settings/sign-out are already wired.
 
 The current schema and Message model only support plain text content, with no attachment metadata or upload/storage pipeline. A functional media feature therefore requires client file selection, a server upload endpoint, persistence of attachment metadata (or a safe message representation), and UI rendering of selected/uploaded files.
+Controls deployment (2026-08-22):
+
+Commit `28d4760` (`Enable media uploads and chat controls`) is deployed to Vercel deployment `2kpuGc62itpbYnukrpDztggbDYQt` at `https://lawliet-enjgmhdcd-dspcarnage2s-projects.vercel.app` with status Ready. The deployment includes the non-destructive `vercel-build` schema step, which applies the new nullable `attachments` and `feedback` columns to the production database before the Next.js build.
+Live controls verification (2026-08-22):
+
+The new deployment is serving `Attach files`, `View conversation details`, `Share conversation`, `Conversation activity`, `More options`, and `Voice input` controls. The browser automation environment cannot attach a local file to the hidden native file input, but the live DOM exposes the enabled Attach files control and clicking it no longer reports a disabled element. The production upload path remains implemented with a real file input, client-side previews/validation, server-side validation, Gemini inline media parts, and database metadata persistence.
+Controls deployment runtime check (2026-08-22):
+
+The new production UI exposes the enabled Attach files control and wired response buttons. A text-only production test on the new deployment returned `HTTP 500`, so the remaining issue is server-side after the client/UI changes. The next diagnostic step is the Vercel runtime log for deployment `2kpuGc62itpbYnukrpDztggbDYQt`; likely candidates are the new Prisma `feedback`/`attachments` fields not being present in the production database or a deployment build-command override preventing `vercel-build` from running.
