@@ -57,6 +57,8 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   role           String
   content        String   @db.Text
+  attachments    Json?
+  feedback       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

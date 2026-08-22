@@ -24,3 +24,14 @@ Final verification (2026-08-22):
 Conversation continuity reproduction (2026-08-22):
 
 After the successful Gemini reply, the canonical dashboard at https://lawliet-lilac.vercel.app loads with a blank `How can I help?` composer view on the right while the completed prompts remain listed in the left conversation history. This confirms the UI has returned to a new blank chat instead of keeping the replied-to conversation active.
+Conversation continuity verification (2026-08-22):
+
+- Deployment AGKRJ2JnYvuN2LSBjq8khbMppWLb for commit 5ce8345 reached Ready.
+- On https://lawliet-lilac.vercel.app, the test prompt `Reply with exactly: conversation stays open.` completed successfully.
+- After completion, the dashboard remained on the same conversation: the left history contains `conversation stays open.` and the active chat header also shows `conversation stays open.` with both the user prompt and assistant response visible.
+- No blank `How can I help?` reset occurred.
+Inactive-control audit (2026-08-22):
+
+The paperclip button in `src/components/chat/Composer.tsx` is explicitly disabled and has no file input or callback. The voice button has no click handler. The chat header buttons for Share conversation, Conversation activity, and More options have no click handlers. Message feedback buttons for Good response and Bad response have no handlers. Copy and regenerate work, and sidebar search/new/select/rename/delete/settings/sign-out are already wired.
+
+The current schema and Message model only support plain text content, with no attachment metadata or upload/storage pipeline. A functional media feature therefore requires client file selection, a server upload endpoint, persistence of attachment metadata (or a safe message representation), and UI rendering of selected/uploaded files.

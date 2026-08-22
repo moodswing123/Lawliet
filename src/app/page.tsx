@@ -21,6 +21,7 @@ export default function Home() {
     editMessage,
     deleteConversation,
     renameConversation,
+    submitFeedback,
     loadConversation,
     stopGeneration,
     isGenerating,
@@ -70,12 +71,15 @@ export default function Home() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <ChatInterface
-          messages={messages}
-          onSend={sendMessage}
-          onRegenerate={regenerateMessage}
-          onEdit={editMessage}
-          onStop={stopGeneration}
+                  <ChatInterface
+            messages={messages}
+            onSend={sendMessage}
+            onRegenerate={regenerateMessage}
+            onEdit={editMessage}
+            onFeedback={submitFeedback}
+            onStop={stopGeneration}
+            onNewChat={() => loadConversation(null)}
+
           isGenerating={isGenerating}
           isLoading={isLoading}
           onMenuClick={() => setIsMobileOpen(true)}

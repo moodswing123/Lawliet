@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
+import { ChatAttachment } from "@/lib/chat-types"
 
 export function useConversation() {
   const { data: session } = useSession()
@@ -63,13 +64,14 @@ export function useConversation() {
 
   // Send message
   const sendMessage = useCallback(
-    async (content: string) => {
-      if (!session?.user?.id || !content.trim()) return
+    async (content: string, attachments?: ChatAttachment[]) => {
+      if (!session?.user?.id || (!content.trim() && !attachments?.length)) return
 
       const tempMessage = {
         id: `temp-${Date.now()}`,
         role: "user",
-        content: content.trim(),
+        content: content.trim() || "Please analyze the attached file.",
+        attachments,
         createdAt: new Date().toISOString(),
       }
 
@@ -81,7 +83,11 @@ export function useConversation() {
 
       const messagesToSend = [
         ...messages,
-        { role: "user", content: content.trim() },
+        {
+          role: "user",
+          content: content.trim() || "Please analyze the attached file.",
+          attachments,
+        },
       ]
 
       try {
@@ -233,6 +239,22 @@ export function useConversation() {
     [messages, sendMessage]
   )
 
+  // Save response feedback
+  const submitFeedback = useCallback(
+    async (messageId: string, feedback: "positive" | "negative") => {
+      try {
+        await fetch(`/api/chat/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback }),
+        })
+      } catch (error) {
+        console.error("Failed to save feedback:", error)
+      }
+    },
+    []
+  )
+
   // Delete conversation
   const deleteConversation = useCallback(
     async (conversationId: string) => {
@@ -296,6 +318,7 @@ export function useConversation() {
     editMessage,
     deleteConversation,
     renameConversation,
+    submitFeedback,
     loadConversation,
     stopGeneration,
   }

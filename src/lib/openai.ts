@@ -1,9 +1,5 @@
 import { GoogleGenAI } from "@google/genai"
-
-type ChatMessage = {
-  role: "system" | "user" | "assistant"
-  content: string
-}
+import type { ChatMessage } from "@/lib/chat-types"
 
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY
@@ -28,7 +24,15 @@ export async function streamChatCompletion(
     .filter((message) => message.role !== "system")
     .map((message) => ({
       role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: message.content }],
+      parts: [
+        { text: message.content },
+        ...(message.attachments || []).map((attachment) => ({
+          inlineData: {
+            mimeType: attachment.type || "application/octet-stream",
+            data: attachment.dataUrl.split(",")[1] || "",
+          },
+        })),
+      ],
     }))
 
   try {

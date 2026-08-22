@@ -4,6 +4,39 @@ import { prisma } from "@/lib/prisma"
 import { streamChatCompletion } from "@/lib/openai"
 import { rateLimit } from "@/lib/rate-limit"
 
+const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024
+
+function normalizeAttachments(value: unknown) {
+  if (!Array.isArray(value) || value.length === 0) return undefined
+
+  return value.map((attachment) => {
+    if (!attachment || typeof attachment !== "object") {
+      throw new Error("Invalid attachment")
+    }
+
+    const item = attachment as Record<string, unknown>
+    const name = typeof item.name === "string" ? item.name : ""
+    const type = typeof item.type === "string" ? item.type : ""
+    const size = typeof item.size === "number" ? item.size : 0
+    const dataUrl = typeof item.dataUrl === "string" ? item.dataUrl : ""
+    const supportedType = type.startsWith("image/") || [
+      "application/pdf",
+      "application/json",
+      "text/plain",
+      "text/csv",
+      "text/markdown",
+      "application/octet-stream",
+    ].includes(type)
+    const supportedName = /\.(txt|md|csv|json|pdf)$/i.test(name)
+
+    if (!name || !dataUrl.startsWith("data:") || size <= 0 || size > MAX_ATTACHMENT_BYTES || (!supportedType && !supportedName)) {
+      throw new Error(`Invalid or unsupported attachment: ${name || "file"}`)
+    }
+
+    return { name, type: type || "application/octet-stream", size, dataUrl }
+  })
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth()
@@ -20,7 +53,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const { messages, conversationId, model, temperature, maxTokens } =
+    const { messages, conversationId, model, temperature, maxTokens, attachments } =
       await req.json()
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -29,6 +62,22 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
+    const userMessage = messages[messages.length - 1]
+    let userAttachments: ReturnType<typeof normalizeAttachments> = undefined
+    try {
+      userAttachments = normalizeAttachments(userMessage?.attachments || attachments)
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Invalid attachment" },
+        { status: 400 }
+      )
+    }
+    const chatMessages = messages.map((message: any, index: number) =>
+      index === messages.length - 1
+        ? { ...message, attachments: userAttachments }
+        : message
+    )
 
     // Validate ownership if conversation exists
     if (conversationId) {
@@ -70,19 +119,20 @@ export async function POST(req: Request) {
     }
 
     // Save user message
-    const userMessage = messages[messages.length - 1]
     await prisma.message.create({
       data: {
         conversationId: convId,
         role: "user",
         content: userMessage.content,
+        ...(userAttachments?.length ? { attachments: userAttachments } : {}),
       },
     })
 
     // Stream response
     const stream = await streamChatCompletion(
-      messages,
-      modelToUse,
+              chatMessages,
+        modelToUse,
+
       temp,
       tokens
     )
