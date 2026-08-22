@@ -52,30 +52,49 @@ export function ChatInterface({
     setIsUserScrolling(!isNearBottom)
   }
 
+  const copyText = async (text: string) => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text)
+        return true
+      }
+    } catch {
+      // Fall through to the legacy browser copy command.
+    }
+
+    try {
+      const helper = document.createElement("textarea")
+      helper.value = text
+      helper.setAttribute("readonly", "")
+      helper.style.position = "fixed"
+      helper.style.opacity = "0"
+      document.body.appendChild(helper)
+      helper.select()
+      const copied = document.execCommand("copy")
+      document.body.removeChild(helper)
+      return copied
+    } catch {
+      return false
+    }
+  }
+
+  const showCopiedState = () => {
+    setShareState("copied")
+    window.setTimeout(() => setShareState("idle"), 1800)
+  }
+
   const handleShare = async () => {
     if (!conversation) return
     const shareText = `${conversation.title || "Lawliet conversation"}\n${window.location.origin}/?conversation=${conversation.id}`
-    try {
-      await navigator.clipboard.writeText(shareText)
-      setShareState("copied")
-      window.setTimeout(() => setShareState("idle"), 1800)
-    } catch {
-      setShareState("idle")
-    }
+    if (await copyText(shareText)) showCopiedState()
   }
 
   const handleCopyConversation = async () => {
     const transcript = messages
       .map((message) => `${message.role === "user" ? "You" : "Lawliet"}: ${message.content}`)
       .join("\n\n")
-    try {
-      await navigator.clipboard.writeText(transcript)
-      setShareState("copied")
-      setShowMenu(false)
-      window.setTimeout(() => setShareState("idle"), 1800)
-    } catch {
-      setShareState("idle")
-    }
+    setShowMenu(false)
+    if (await copyText(transcript)) showCopiedState()
   }
 
   return (

@@ -44,3 +44,15 @@ The new deployment is serving `Attach files`, `View conversation details`, `Shar
 Controls deployment runtime check (2026-08-22):
 
 The new production UI exposes the enabled Attach files control and wired response buttons. A text-only production test on the new deployment returned `HTTP 500`, so the remaining issue is server-side after the client/UI changes. The next diagnostic step is the Vercel runtime log for deployment `2kpuGc62itpbYnukrpDztggbDYQt`; likely candidates are the new Prisma `feedback`/`attachments` fields not being present in the production database or a deployment build-command override preventing `vercel-build` from running.
+Post-schema deployment check (2026-08-22):
+
+The `ca2bb46` deployment is Ready, but a fresh text request on `https://lawliet-lilac.vercel.app` still returns `HTTP 500`. This confirms the build-command correction did not yet make the chat route healthy, or it exposed a second server-side issue. The next step is to inspect the newest Vercel runtime log entry for `/api/chat` and verify whether the build actually connected to the intended Supabase database.
+Post-schema production verification (2026-08-22):
+
+After running the confirmed Supabase query, the canonical dashboard loaded conversation history without 500 errors. A text test completed successfully: `Reply with exactly: database is fixed.` produced the matching Gemini response, saved the conversation, and left it selected. The assistant response displayed Copy response, Regenerate response, Good response, and Bad response controls. The Attach files control, conversation details, share, activity, and More options controls remained visible, and the Victory Tech™ watermark remained present.
+Production control verification (2026-08-22):
+
+The assistant Good response button successfully changed to `Thanks for the feedback`, confirming the PATCH feedback endpoint works against the updated Supabase schema. The Conversation activity button opened a modal showing the selected conversation title, message count, creation time, and last-updated time. The current chat remained selected and the Victory Tech™ watermark remained visible.
+Media and menu verification (2026-08-22):
+
+A simulated image selection created a `lawliet-test.svg` attachment preview in the live composer. Sending `Describe the attached test image in one short sentence.` succeeded; Gemini identified the blue square with a centered white circle, and the attachment remained visible in the saved conversation after the reply. The More options control opened a working menu with Copy conversation, New chat, and Settings actions.
