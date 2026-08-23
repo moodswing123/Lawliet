@@ -86,6 +86,13 @@ export default function SignUpPage() {
             {loading ? "Creating account..." : "Create Account"}
           </Button>
 
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            Need help?{" "}
+            <a href="mailto:support.lawlietgpt@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+              Contact LawlietGPT Support
+            </a>
+          </p>
+
           <div className="text-center text-sm">
             <span className="text-gray-600 dark:text-gray-400">Already have an account?</span>{" "}
             <Link href="/auth/signin" className="text-blue-600 dark:text-blue-400 hover:underline">

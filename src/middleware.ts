@@ -28,5 +28,6 @@ export const config = {
     "/auth/signin",
     "/auth/signup",
     "/auth/reset-password",
+    "/auth/reset-password/:path*",
   ],
 }

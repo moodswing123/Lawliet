@@ -87,6 +87,13 @@ export default function SignInPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </Button>
+
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            Need help?{" "}
+            <a href="mailto:support.lawlietgpt@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+              Contact LawlietGPT Support
+            </a>
+          </p>
         </form>
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { isEmailConfigured, sendWelcomeEmail } from "@/lib/email"
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name } = await req.json()
+    const { email: rawEmail, password, name } = await req.json()
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : ""
 
     if (!email || !password) {
       return NextResponse.json(
@@ -43,6 +45,14 @@ export async function POST(req: Request) {
         },
       },
     })
+
+    if (isEmailConfigured()) {
+      try {
+        await sendWelcomeEmail({ email: user.email, name: user.name })
+      } catch (emailError) {
+        console.error("Welcome email delivery error:", emailError)
+      }
+    }
 
     return NextResponse.json(
       {
