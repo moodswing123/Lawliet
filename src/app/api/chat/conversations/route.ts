@@ -1,16 +1,16 @@
-import { auth } from "@/lib/auth"
+import { getRequestUserId } from "@/lib/mobile-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(req: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       orderBy: { updatedAt: "desc" },
       include: {
         messages: {
@@ -31,13 +31,13 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     await prisma.conversation.deleteMany({
-      where: { userId: session.user.id },
+      where: { userId },
     })
 
     return NextResponse.json({ success: true })

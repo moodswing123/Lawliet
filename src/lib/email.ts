@@ -67,16 +67,19 @@ export async function sendPasswordResetEmail(params: {
   email: string
   name?: string | null
   token: string
+  mobile?: boolean
 }) {
   const recipientName = params.name?.trim() || "there"
   const resetUrl = `${getAppUrl()}/auth/reset-password?token=${encodeURIComponent(params.token)}`
+  const androidResetUrl = `lawlietgpt://reset-password?token=${encodeURIComponent(params.token)}`
+  const primaryResetUrl = params.mobile ? androidResetUrl : resetUrl
   const safeName = escapeHtml(recipientName)
 
   return sendMail({
     to: params.email,
     subject: "Reset your LawlietGPT password",
-    text: `Hi ${recipientName},\n\nWe received a request to reset your LawlietGPT password. Use this link within 30 minutes:\n\n${resetUrl}\n\nIf you did not request this, you can ignore this email. Your password will not change unless the link is used.\n\nLawlietGPT Support`,
-    html: `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:32px auto;padding:32px;background:#fff;border-radius:18px"><div style="font-size:24px;font-weight:700;color:#3157d5">LawlietGPT</div><h1 style="font-size:24px;margin:28px 0 12px">Reset your password</h1><p>Hi ${safeName},</p><p>We received a request to reset your LawlietGPT password. This link expires in <strong>30 minutes</strong> and can only be used once.</p><p style="margin:28px 0"><a href="${resetUrl}" style="display:inline-block;padding:13px 20px;background:#3157d5;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">Reset password</a></p><p style="font-size:13px;color:#5d687d">If you did not request this, you can safely ignore this email. Your password will not change unless the link is used.</p><p style="font-size:13px;color:#5d687d">If the button does not work, copy and paste this link into your browser:<br>${resetUrl}</p><p style="margin-top:28px;font-size:13px;color:#5d687d">LawlietGPT Support</p></div></body></html>`,
+    text: `Hi ${recipientName},\n\nWe received a request to reset your LawlietGPT password. Use this link within 30 minutes:\n\n${primaryResetUrl}\n\nIf the app does not open, use the browser link instead: ${resetUrl}\n\nIf you did not request this, you can ignore this email. Your password will not change unless the link is used.\n\nLawlietGPT Support`,
+    html: `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#172033"><div style="max-width:560px;margin:32px auto;padding:32px;background:#fff;border-radius:18px"><div style="font-size:24px;font-weight:700;color:#3157d5">LawlietGPT</div><h1 style="font-size:24px;margin:28px 0 12px">Reset your password</h1><p>Hi ${safeName},</p><p>We received a request to reset your LawlietGPT password. This link expires in <strong>30 minutes</strong> and can only be used once.</p><p style="margin:28px 0"><a href="${primaryResetUrl}" style="display:inline-block;padding:13px 20px;background:#3157d5;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">Reset password</a></p><p style="font-size:13px;color:#5d687d">If the Android app does not open, <a href="${resetUrl}" style="color:#3157d5">use the browser reset page</a>.</p><p style="font-size:13px;color:#5d687d">If you did not request this, you can safely ignore this email. Your password will not change unless the link is used.</p><p style="font-size:13px;color:#5d687d">If the button does not work, copy and paste this link into your browser:<br>${resetUrl}</p><p style="margin-top:28px;font-size:13px;color:#5d687d">LawlietGPT Support</p></div></body></html>`,
   })
 }
 

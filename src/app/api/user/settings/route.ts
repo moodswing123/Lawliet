@@ -1,22 +1,22 @@
-import { auth } from "@/lib/auth"
+import { getRequestUserId } from "@/lib/mobile-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(req: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const settings = await prisma.userSetting.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: userId },
     })
 
     const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
     if (settings && settings.model !== defaultGeminiModel) {
       const normalizedSettings = await prisma.userSetting.update({
-        where: { userId: session.user.id },
+        where: { userId: userId },
         data: { model: defaultGeminiModel },
       })
       return NextResponse.json(normalizedSettings)
@@ -33,8 +33,8 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -47,10 +47,10 @@ export async function PATCH(req: Request) {
     }
 
     const settings = await prisma.userSetting.upsert({
-      where: { userId: session.user.id },
+      where: { userId: userId },
       update: normalizedData,
       create: {
-        userId: session.user.id,
+        userId: userId,
         ...normalizedData,
       },
     })

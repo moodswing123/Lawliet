@@ -9,6 +9,21 @@ function getGeminiClient() {
   return new GoogleGenAI({ apiKey })
 }
 
+export async function transcribeAudio(dataUrl: string, mimeType: string) {
+  const response = await getGeminiClient().models.generateContent({
+    model: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+    contents: [{
+      role: "user",
+      parts: [
+        { text: "Transcribe the attached audio exactly. Return only the spoken words, without commentary." },
+        { inlineData: { mimeType, data: dataUrl.split(",")[1] || "" } },
+      ],
+    }],
+    config: { temperature: 0, maxOutputTokens: 2048 },
+  })
+  return response.text?.trim() || ""
+}
+
 export async function streamChatCompletion(
   messages: ChatMessage[],
   model?: string,

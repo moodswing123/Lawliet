@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getRequestUserId } from "@/lib/mobile-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { streamChatCompletion } from "@/lib/openai"
@@ -39,13 +39,13 @@ function normalizeAttachments(value: unknown) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Rate limiting
-    const limitResult = await rateLimit(session.user.id)
+    const limitResult = await rateLimit(userId)
     if (limitResult.limited) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       const conversation = await prisma.conversation.findFirst({
         where: {
           id: conversationId,
-          userId: session.user.id,
+          userId,
         },
       })
       if (!conversation) {
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
 
     // Get user settings
     const settings = await prisma.userSetting.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
     })
 
     const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     if (!convId) {
       const newConversation = await prisma.conversation.create({
         data: {
-          userId: session.user.id,
+          userId,
           title: messages[0]?.content?.slice(0, 50) || "New Conversation",
         },
       })

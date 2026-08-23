@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getRequestUserId } from "@/lib/mobile-auth"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -7,8 +7,8 @@ export async function GET(
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getRequestUserId(req)
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -17,7 +17,7 @@ export async function GET(
     const conversation = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
-        userId: session.user.id,
+        userId,
       },
       include: {
         messages: {

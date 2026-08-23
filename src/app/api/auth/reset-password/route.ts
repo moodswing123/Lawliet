@@ -33,6 +33,7 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}))
     const email = normalizeEmail(body.email)
+    const mobile = body.mobile === true
 
     if (!email || !email.includes("@") || email.length > 254) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 })
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
     })
 
     try {
-      await sendPasswordResetEmail({ email: user.email, name: user.name, token })
+      await sendPasswordResetEmail({ email: user.email, name: user.name, token, mobile })
     } catch (error) {
       await prisma.passwordResetToken.deleteMany({ where: { tokenHash: hashToken(token) } })
       throw error
