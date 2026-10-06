@@ -1,4 +1,4 @@
-import OpenAI, { type ChatCompletionMessageParam } from "openai"
+import OpenAI from "openai"
 import type { ChatMessage } from "@/lib/chat-types"
 
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1"
@@ -74,7 +74,7 @@ export async function streamChatCompletion(
   try {
     const stream = await getGroqClient().chat.completions.create({
       model: modelToUse,
-      messages: formattedMessages as unknown as ChatCompletionMessageParam[],
+      messages: formattedMessages as any,
       temperature: temp,
       max_tokens: tokens,
       stream: true,
