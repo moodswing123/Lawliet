@@ -13,11 +13,11 @@ export async function GET(req: Request) {
       where: { userId: userId },
     })
 
-    const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
-    if (settings && settings.model !== defaultGeminiModel) {
+    const defaultGroqModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
+    if (settings && settings.model !== defaultGroqModel) {
       const normalizedSettings = await prisma.userSetting.update({
         where: { userId: userId },
-        data: { model: defaultGeminiModel },
+        data: { model: defaultGroqModel },
       })
       return NextResponse.json(normalizedSettings)
     }
@@ -41,8 +41,8 @@ export async function PATCH(req: Request) {
     const data = await req.json()
     const normalizedData = {
       ...data,
-      ...(data.model && String(data.model) !== (process.env.GEMINI_MODEL || "gemini-3.6-flash")
-        ? { model: process.env.GEMINI_MODEL || "gemini-3.6-flash" }
+      ...(data.model && String(data.model) !== (process.env.GROQ_MODEL || "llama-3.3-70b-versatile")
+        ? { model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile" }
         : {}),
     }
 

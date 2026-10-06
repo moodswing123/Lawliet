@@ -42,6 +42,24 @@ function getTransporter() {
   })
 }
 
+function redactEmail(value: string) {
+  const [local, domain] = value.split("@")
+  if (!domain) return "[invalid-email]"
+  return `${local.slice(0, 2)}***@${domain}`
+}
+
+function describeMailError(error: unknown) {
+  const item = error as Record<string, unknown> | null
+  return {
+    name: item?.name,
+    code: item?.code,
+    responseCode: item?.responseCode,
+    command: item?.command,
+    response: typeof item?.response === "string" ? item.response.slice(0, 240) : undefined,
+    message: error instanceof Error ? error.message : "Unknown SMTP error",
+  }
+}
+
 export function isEmailConfigured() {
   return Boolean(process.env.GMAIL_USER?.trim() && process.env.GMAIL_APP_PASSWORD?.trim())
 }
@@ -51,16 +69,40 @@ async function sendMail(options: {
   subject: string
   text: string
   html: string
+  replyTo?: string
 }) {
   const { user } = getMailboxCredentials()
-  return getTransporter().sendMail({
+  const startedAt = Date.now()
+  const mail = {
     from: `LawlietGPT Support <${user}>`,
-    replyTo: user,
+    replyTo: options.replyTo || user,
     to: options.to,
     subject: options.subject,
     text: options.text,
     html: options.html,
-  })
+  }
+  try {
+    const result = await getTransporter().sendMail(mail)
+    console.info("[smtp] delivery_succeeded", JSON.stringify({
+      provider: "gmail",
+      to: redactEmail(options.to),
+      subject: options.subject,
+      messageId: result.messageId,
+      responseCode: result.responseCode,
+      response: result.response?.slice(0, 240),
+      durationMs: Date.now() - startedAt,
+    }))
+    return result
+  } catch (error) {
+    console.error("[smtp] delivery_failed", JSON.stringify({
+      provider: "gmail",
+      to: redactEmail(options.to),
+      subject: options.subject,
+      durationMs: Date.now() - startedAt,
+      error: describeMailError(error),
+    }))
+    throw error
+  }
 }
 
 export async function sendPasswordResetEmail(params: {
@@ -105,12 +147,12 @@ export async function sendSupportNotification(params: {
   replyTo?: string
 }) {
   const { user } = getMailboxCredentials()
-  return getTransporter().sendMail({
-    from: `LawlietGPT Website <${user}>`,
-    replyTo: params.replyTo || user,
+  return sendMail({
     to: user,
+    replyTo: params.replyTo || user,
     subject: params.subject,
     text: params.message,
+    html: `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap">${escapeHtml(params.message)}</pre>`,
   })
 }
 

@@ -153,11 +153,11 @@ export default function SettingsPage() {
                 AI Model
               </label>
               <select
-                value={settings.model === "gemini-3.6-flash" ? settings.model : "gemini-3.6-flash"}
+                value={settings.model === "llama-3.3-70b-versatile" ? settings.model : "llama-3.3-70b-versatile"}
                 onChange={handleModelChange}
                 className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               >
-                <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+                <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Groq)</option>
               </select>
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className={`w-2 h-2 rounded-full ${saving ? "animate-pulse bg-yellow-500" : "bg-green-500"}`} />

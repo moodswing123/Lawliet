@@ -100,9 +100,9 @@ export async function POST(req: Request) {
       where: { userId },
     })
 
-    const defaultGeminiModel = process.env.GEMINI_MODEL || "gemini-3.6-flash"
+    const defaultGroqModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
     const requestedModel = model || settings?.model
-    const modelToUse = requestedModel === defaultGeminiModel ? requestedModel : defaultGeminiModel
+    const modelToUse = requestedModel === defaultGroqModel ? requestedModel : defaultGroqModel
     const temp = temperature ?? settings?.temperature ?? 0.7
     const tokens = maxTokens ?? settings?.maxTokens ?? 4096
 
