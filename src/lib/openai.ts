@@ -39,7 +39,7 @@ export async function transcribeAudio(dataUrl: string, mimeType: string) {
       response_format: "text",
       prompt: "Return only the spoken words, without commentary.",
     })
-    return typeof response === "string" ? response.trim() : response.text.trim()
+    return String(response).trim()
   } catch (error: any) {
     const status = error?.status || error?.response?.status
     if (status === 401 || status === 403) throw new Error("Invalid Groq API key. Please check GROQ_API_KEY.")
