@@ -88,7 +88,7 @@ async function sendMail(options: {
       to: redactEmail(options.to),
       subject: options.subject,
       messageId: result.messageId,
-      responseCode: result.responseCode,
+      responseCode: (result as { responseCode?: number }).responseCode,
       response: result.response?.slice(0, 240),
       durationMs: Date.now() - startedAt,
     }))
