@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       where: { userId: userId },
     })
 
-    const defaultGroqModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
+    const defaultGroqModel = process.env.GROQ_MODEL || "openai/gpt-oss-120b"
     if (settings && settings.model !== defaultGroqModel) {
       const normalizedSettings = await prisma.userSetting.update({
         where: { userId: userId },
@@ -41,8 +41,8 @@ export async function PATCH(req: Request) {
     const data = await req.json()
     const normalizedData = {
       ...data,
-      ...(data.model && String(data.model) !== (process.env.GROQ_MODEL || "llama-3.3-70b-versatile")
-        ? { model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile" }
+      ...(data.model && String(data.model) !== (process.env.GROQ_MODEL || "openai/gpt-oss-120b")
+        ? { model: process.env.GROQ_MODEL || "openai/gpt-oss-120b" }
         : {}),
     }
 

@@ -12,7 +12,7 @@ function getGroqClient() {
 }
 
 function getGroqModel() {
-  return process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
+  return process.env.GROQ_MODEL || "openai/gpt-oss-120b"
 }
 
 function getTextAttachment(attachment: NonNullable<ChatMessage["attachments"]>[number]) {

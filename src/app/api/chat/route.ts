@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       where: { userId },
     })
 
-    const defaultGroqModel = process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
+    const defaultGroqModel = process.env.GROQ_MODEL || "openai/gpt-oss-120b"
     const requestedModel = model || settings?.model
     const modelToUse = requestedModel === defaultGroqModel ? requestedModel : defaultGroqModel
     const temp = temperature ?? settings?.temperature ?? 0.7
